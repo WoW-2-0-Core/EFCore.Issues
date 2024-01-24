@@ -1,22 +1,28 @@
-using EfCoreIssue.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using UpdateIssue.Api.Persistence.DataContexts;
 
-namespace EfCoreIssue.Controllers;
+namespace UpdateIssue.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class RatingsController(GuestFeedbackService guestFeedbackService) : ControllerBase
+public class RatingsController(AppDbContext appDbContext) : ControllerBase
 {
     [HttpGet]
     public IActionResult GetFeedbacks()
     {
-        return Ok(guestFeedbackService.Get());
+        return Ok(appDbContext.GuestFeedbacks.ToList());
     }
-    
-    [HttpDelete]
-    public async ValueTask<IActionResult> RemoveGuestFeedbackByIdAsync(Guid id, 
-        CancellationToken cancellationToken = default)
+
+    [HttpDelete("{feedbackId: guid}")]
+    public async ValueTask<IActionResult> RemoveGuestFeedbackByIdAsync([FromRoute] Guid feedbackId, CancellationToken cancellationToken = default)
     {
-        return Ok(await guestFeedbackService.DeleteByIdAsync(id, cancellationToken: cancellationToken));
+        var foundEntity = appDbContext.GuestFeedbacks.FirstOrDefault(feedback => feedback.Id == feedbackId);
+
+        if (foundEntity is null) return NotFound();
+
+        appDbContext.GuestFeedbacks.Remove(foundEntity);
+        await appDbContext.SaveChangesAsync(cancellationToken);
+
+        return Ok();
     }
 }
