@@ -13,7 +13,7 @@ public class RatingsController(AppDbContext appDbContext) : ControllerBase
         return Ok(appDbContext.GuestFeedbacks.ToList());
     }
 
-    [HttpDelete("{feedbackId: guid}")]
+    [HttpDelete("{feedbackId:guid}")]
     public async ValueTask<IActionResult> RemoveGuestFeedbackByIdAsync([FromRoute] Guid feedbackId, CancellationToken cancellationToken = default)
     {
         var foundEntity = appDbContext.GuestFeedbacks.FirstOrDefault(feedback => feedback.Id == feedbackId);
